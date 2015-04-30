@@ -62,9 +62,12 @@ def parse_inline(filename = "bid.html"):
 parser = etree.HTMLParser()
 tree = etree.parse(urllib2.urlopen(url),parser)
 paging = tree.xpath('//a[@class="ellipsis"]')
-#result = etree.tostring(tree.getroot(), pretty_print = True, method = "html")#
 print len(paging)
-print  paging[1].text
+print  len(paging[1].text)
+print paging[1].text
+print paging[1].text[2]
+#result = etree.tostring(tree.getroot(), pretty_print = True, method = "html")#
+
 #parsed = parse(urllib2.urlopen(url))
 #doc = parsed.getroot()
 #doc.make_links_absolute(url)
