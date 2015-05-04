@@ -10,6 +10,7 @@ import lxml.etree as etree
 from lxml.html import parse, fromstring
 import lxml
 from io import StringIO, BytesIO
+import csv
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 
@@ -59,13 +60,25 @@ def parse_inline(filename = "bid.html"):
     print len(lines)
     print lines
 
-parser = etree.HTMLParser()
-tree = etree.parse(urllib2.urlopen(url),parser)
-paging = tree.xpath('//a[@class="ellipsis"]')
-print len(paging)
-print  len(paging[1].text)
-print paging[1].text
-print paging[1].text[2]
+def csv_writer():
+    a = [["aaaaa",1], [1,2], [2,3], [3,4]]
+    b = [4,5,6,7]
+    with open('csv_text.csv', 'w') as csvfile:
+        writer =csv.writer(csvfile)
+        for i in a:
+            print i
+            writer.writerow(i)
+
+    
+
+csv_writer()
+##parser = etree.HTMLParser()
+##tree = etree.parse(urllib2.urlopen(url),parser)
+##paging = tree.xpath('//a[@class="ellipsis"]')
+##print len(paging)
+##print  len(paging[1].text)
+##print paging[1].text
+##print paging[1].text[2]
 #result = etree.tostring(tree.getroot(), pretty_print = True, method = "html")#
 
 #parsed = parse(urllib2.urlopen(url))
