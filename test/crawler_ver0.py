@@ -203,7 +203,7 @@ def main():
     fname_rs = 'ranked_t.csv'
 
     
-    exetime = ['1116','2354','1034']
+    exetime = ['2253','2354','1034']
     key = -1
     while True:
        
@@ -231,6 +231,7 @@ def main():
 
 
 if __name__ == '__main__':
+    main()
     
 
 

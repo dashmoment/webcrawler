@@ -44,20 +44,21 @@ def collector_txt(filename, data, site ='yahoo'):
        
         bid_file = open(filename,'w')
         writer =csv.writer(bid_file)
+        f_rank = open('ranking.csv','w')
+        w_rank = csv.writer(f_rank)
+        
         for item in container_p:
             line_p = unicode(item.text).encode('utf-8')
             line_s = unicode(container_s[idx].text).encode('utf-8')
             line_t = unicode(container_t[idx].text).encode('utf-8')
-            score = str((len(container_p) - idx)*5)
+            score = str((len(container_p) - idx))
             data = [score, line_p, line_s, line_t]
-
-            writer.writerow(data)
-                  
-            #bid_file.write(','.join(data))
-            #bid_file.write('\n')
+            #data_r = [line_t, score]
+            #w_rank.writerow(data_r)
+            writer.writerow(data)                        
             idx = idx + 1
-        #bid_file.close()
-        print "writefile finish " + timer
+        
+        print "writefile finish "
 
 def readfile(filename):
         content = []
@@ -74,9 +75,12 @@ def readfile_dict(filename):
     for key, value in reader:
         content[key] = value
         #print content
+    bid_file.close()
     return content
 
 def sort(fname_s, fname_rs, content , bytag = 'store'):
+
+    r_fname = 'ranking.txt'
     if bytag == 'store':
         col_tag = 2 #tag for the cols of stors
     elif bytag == 'title':
@@ -86,17 +90,29 @@ def sort(fname_s, fname_rs, content , bytag = 'store'):
 
     if os.path.isfile(fname_rs):
         content_s  = readfile_dict(fname_rs)
+        
     else:
         content_s = {}
+       
+
+    if os.path.isfile(r_fname):
+        r_content = readfile_dict(r_fname)
+    else:
+         r_content = {}
+         
     pool = []
     pool_store = []
     rank = content_s
+    rank_t = r_content
     sorted_file = open(fname_s,'w')
-    ranked_file = open(fname_rs,'w')
+    ranked_file = open(fname_rs,'w') 
+    f_rank = open(r_fname, 'w')
+    
     counter = 0
  
     for idx in range(len(content)): 
         temp = content[idx][col_tag]
+        temp_r = content[idx][3]
         in_sorted = matcher(temp,pool_store)
         #print len(pool),in_sorted
 
@@ -117,7 +133,16 @@ def sort(fname_s, fname_rs, content , bytag = 'store'):
                 rank[str(temp)] = rank[str(temp)] + 1
             else:
                 rank[str(temp)] = 1
-                
+
+
+        if str(temp_r) in r_content:
+            rank_t[str(temp_r)] = int(rank_t[str(temp_r)]) + int(content[idx][0])
+            #print r_content[str(temp)]
+        else:
+            rank_t[str(temp_r)] = int(content[idx][0])
+
+    print rank_t
+    print rank 
 
     writer_s = csv.writer(sorted_file)
     for p in pool:
@@ -125,13 +150,57 @@ def sort(fname_s, fname_rs, content , bytag = 'store'):
 
     rank = sorted(rank.items(), key = operator.itemgetter(1))
     rank.reverse()
+    rank_t = sorted(rank_t.items(), key = operator.itemgetter(1))
+    rank_t.reverse()
     
-    writer =csv.writer(ranked_file)
+    writer = csv.writer(ranked_file)
     for value in rank:
         writer.writerow(value)
 
     print 'sorting by stores complete...'
-        
+
+    print 'Preparing for ranking file'
+
+    w_rank = csv.writer(f_rank)
+    for r in rank_t:
+        w_rank.writerow(r)
+
+    f_rank.close()
+
+   
+    #sort_rank(r_fname, content)
+
+
+def sort_rank(r_fname, content):
+
+
+    if os.path.isfile(r_fname):
+        r_content = readfile_dict(r_fname)
+    else:
+        print 'create new file ...'
+        r_content = {}
+
+    for idx in range(len(content)):
+        temp = content[idx][3]
+        #print temp 
+        if str(temp) in r_content:
+            r_content[str(temp)] = int(r_content[str(temp)]) + int(content[idx][0])
+            #print r_content[str(temp)]
+        else:
+            r_content[str(temp)] = int(content[idx][0])
+            #print r_content[str(temp)]
+
+    print r_content  
+    
+    f_rank = open(r_fname, 'w')
+    w_rank = csv.writer(f_rank)
+    for r in r_content:
+        w_rank.writerow(r)
+
+    f_rank.close()
+
+    print 'rank file had been update...'
+    
 
 def matcher(data, sort_list):
 
@@ -196,7 +265,7 @@ def matcher_part(data, sort_list):
         raise ValueError('type should be the same')
 
 
-if __name__ == '__main__':
+def main():
     url = "http://goo.gl/BxZp2J"
     filename = "y_bid.csv"
     fname_s = 'sorted_t.csv'
@@ -230,8 +299,15 @@ if __name__ == '__main__':
 
 
 
+if __name__ == '__main__':
+    url = "http://goo.gl/BxZp2J"
+    filename = "y_bid.csv"
+    fname_s = 'sorted_t.csv'
+    fname_rs = 'ranked_t.csv'
 
 
-
-
-
+    #tree = parser_etree(url)
+    #data = filter_etree(tree)
+    #collector_txt(filename,data)
+    content = readfile(filename)
+    sort(fname_s, fname_rs ,content)
