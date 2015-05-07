@@ -90,8 +90,19 @@ Developement notes:
 
 
 
-
-
+2014/05/07
+	1. Finish sortbytitle which is merged in function sort():
+		At first I ran into a trouble that csv writer can not write row correctly by:
+			 writer_s.writerow(row_content)
+			 
+		The solution is that I need to add:
+			rank_t = sorted(rank_t.items(), key = operator.itemgetter(1))
+			
+		where rank_t is the dict which store result data.
+		I do not know why I need this before write row, but it did work well.
+		So, just do it.
+		
+		Note: This only need for dict object. For list object, just use write row, it will do it own jod.
 
 
 
