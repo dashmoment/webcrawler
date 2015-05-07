@@ -196,14 +196,14 @@ def matcher_part(data, sort_list):
         raise ValueError('type should be the same')
 
 
-if __name__ == '__main__':
+def main():
     url = "http://goo.gl/BxZp2J"
     filename = "y_bid.csv"
     fname_s = 'sorted_t.csv'
     fname_rs = 'ranked_t.csv'
 
     
-    exetime = ['1728','2354','1034']
+    exetime = ['1116','2354','1034']
     key = -1
     while True:
        
@@ -230,7 +230,8 @@ if __name__ == '__main__':
 
 
 
-
+if __name__ == '__main__':
+    
 
 
 
