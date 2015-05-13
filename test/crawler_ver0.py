@@ -44,20 +44,17 @@ def collector_txt(filename, data, site ='yahoo'):
        
         bid_file = open(filename,'w')
         writer =csv.writer(bid_file)
+        
         for item in container_p:
             line_p = unicode(item.text).encode('utf-8')
             line_s = unicode(container_s[idx].text).encode('utf-8')
             line_t = unicode(container_t[idx].text).encode('utf-8')
-            score = str((len(container_p) - idx)*5)
+            score = str((len(container_p) - idx))
             data = [score, line_p, line_s, line_t]
-
-            writer.writerow(data)
-                  
-            #bid_file.write(','.join(data))
-            #bid_file.write('\n')
+            writer.writerow(data)                        
             idx = idx + 1
-        #bid_file.close()
-        print "writefile finish " + timer
+        
+        print "writefile finish "
 
 def readfile(filename):
         content = []
@@ -74,9 +71,12 @@ def readfile_dict(filename):
     for key, value in reader:
         content[key] = value
         #print content
+    bid_file.close()
     return content
 
-def sort(fname_s, fname_rs, content , bytag = 'store'):
+def sort(content , bytag = 'store', fname_s = 'sorted.csv',fname_rs = 'rankby_s.csv',r_fname = 'rankby_t.csv'):
+
+    
     if bytag == 'store':
         col_tag = 2 #tag for the cols of stors
     elif bytag == 'title':
@@ -86,17 +86,29 @@ def sort(fname_s, fname_rs, content , bytag = 'store'):
 
     if os.path.isfile(fname_rs):
         content_s  = readfile_dict(fname_rs)
+        
     else:
         content_s = {}
+       
+
+    if os.path.isfile(r_fname):
+        r_content = readfile_dict(r_fname)
+    else:
+         r_content = {}
+         
     pool = []
     pool_store = []
     rank = content_s
+    rank_t = r_content
     sorted_file = open(fname_s,'w')
-    ranked_file = open(fname_rs,'w')
+    ranked_file = open(fname_rs,'w') 
+    f_rank = open(r_fname, 'w')
+    
     counter = 0
  
     for idx in range(len(content)): 
         temp = content[idx][col_tag]
+        temp_r = content[idx][3]
         in_sorted = matcher(temp,pool_store)
         #print len(pool),in_sorted
 
@@ -105,19 +117,26 @@ def sort(fname_s, fname_rs, content , bytag = 'store'):
             pool_store.append(content[idx][col_tag])
             
             if str(temp) in rank:
-                rank[str(temp)] = int(rank[str(temp)]) + 1
+                rank[str(temp)] = int(rank[str(temp)]) + 25
             else:
-                rank[str(temp)] = 1
+                rank[str(temp)] = 25
 
         elif in_sorted != -1:
             pool.insert(in_sorted + 1, content[idx])
             pool_store.insert(in_sorted + 1, content[idx][col_tag])
             
             if str(temp) in rank:
-                rank[str(temp)] = rank[str(temp)] + 1
+                rank[str(temp)] = rank[str(temp)] + 25
             else:
-                rank[str(temp)] = 1
-                
+                rank[str(temp)] = 25
+
+
+        if str(temp_r) in r_content:
+            rank_t[str(temp_r)] = int(rank_t[str(temp_r)]) + int(content[idx][0])
+           
+        else:
+            rank_t[str(temp_r)] = int(content[idx][0])
+            
 
     writer_s = csv.writer(sorted_file)
     for p in pool:
@@ -125,13 +144,27 @@ def sort(fname_s, fname_rs, content , bytag = 'store'):
 
     rank = sorted(rank.items(), key = operator.itemgetter(1))
     rank.reverse()
+    rank_t = sorted(rank_t.items(), key = operator.itemgetter(1))
+    rank_t.reverse()
     
-    writer =csv.writer(ranked_file)
+    writer = csv.writer(ranked_file)
     for value in rank:
         writer.writerow(value)
 
     print 'sorting by stores complete...'
-        
+
+    print 'Preparing for ranking file'
+
+    w_rank = csv.writer(f_rank)
+    for r in rank_t:
+        w_rank.writerow(r)
+    print 'rank file had been update...'
+
+    sorted_file.close()
+    f_rank.close()
+    ranked_file.close()
+
+   
 
 def matcher(data, sort_list):
 
@@ -203,7 +236,7 @@ def main():
     fname_rs = 'ranked_t.csv'
 
     
-    exetime = ['2253','2354','1034']
+    exetime = ['1728','2354','1034']
     key = -1
     while True:
        
@@ -231,9 +264,13 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    url = "http://goo.gl/BxZp2J"
+    filename = "y_bid.csv"
     
 
 
-
-
+    tree = parser_etree(url)
+    data = filter_etree(tree)
+    collector_txt(filename,data)
+    content = readfile(filename)
+    sort(content)
